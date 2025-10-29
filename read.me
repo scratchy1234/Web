@@ -1,1 +1,47 @@
+## Getting Started
 
+Follow these steps to install dependencies and launch the LiuYao prototype locally.
+
+1. **Open a terminal in the project folder**
+
+   ```bash
+   cd path/to/your/folder/Web
+   ```
+
+   Replace `path/to/your/folder` with the directory where you cloned or extracted this repository. Running commands outside the `Web` directory will lead to errors such as `ENOENT ... package.json`.
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Build the TypeScript sources**
+
+   ```bash
+   npm run build
+   ```
+
+4. **Start the server**
+
+   ```bash
+   npm start
+   ```
+
+   The app listens on [http://localhost:3000](http://localhost:3000) by default. Set a custom port by prefixing the command with `PORT=4000` (or any other open port) if needed.
+
+5. **Open the app**
+
+   Visit the URL shown in the terminal (typically `http://localhost:3000`) to access the LiuYao consultation form. Fill in the form and submit it to receive the generated analysis.
+
+6. **(Optional) Call the API directly**
+
+   With the server running, you can test the backend with curl:
+
+   ```bash
+   curl -X POST http://localhost:3000/api/analyze \
+     -H "Content-Type: application/json" \
+     -d '{"question":"Should I start the new project now?","context":"Timing feels uncertain","model":"liuyao-classic"}'
+   ```
+
+   The `question` field is required; `context` and `model` are optional. The response includes a summary, reasoning, and recommendations.
