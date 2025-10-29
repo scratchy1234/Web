@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LiuYao Consultation Prototype</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>LiuYao Consultation Prototype</h1>
+      <p class="description">
+        Enter your question and optional background context. Choose an analysis model and submit to receive a synthesized LiuYao-inspired insight.
+      </p>
+      <form id="consultation-form" novalidate>
+        <label for="question">Primary question</label>
+        <textarea id="question" name="question" required rows="4" placeholder="What would you like to know?"></textarea>
+
+        <label for="context">Additional context (optional)</label>
+        <textarea id="context" name="context" rows="3" placeholder="Share any background information that could help the reading."></textarea>
+
+        <label for="model">Analysis model</label>
+        <select id="model" name="model">
+          <option value="liuyao-lite">LiuYao Lite</option>
+          <option value="liuyao-classic">LiuYao Classic</option>
+          <option value="liuyao-experimental">Experimental Blend</option>
+        </select>
+
+        <button type="submit">Analyze</button>
+      </form>
+
+      <section id="result" aria-live="polite" hidden>
+        <h2>Analysis Result</h2>
+        <div id="result-content"></div>
+      </section>
+    </main>
+
+    <template id="loading-template">
+      <div class="loading">Consulting the LiuYao sages...</div>
+    </template>
+
+    <template id="error-template">
+      <div class="error"></div>
+    </template>
+
+    <script type="module">
+      const form = document.getElementById('consultation-form');
+      const resultSection = document.getElementById('result');
+      const resultContent = document.getElementById('result-content');
+      const loadingTemplate = document.getElementById('loading-template');
+      const errorTemplate = document.getElementById('error-template');
+
+      function renderLoading() {
+        const loadingNode = loadingTemplate.content.cloneNode(true);
+        resultContent.replaceChildren(loadingNode);
+        resultSection.hidden = false;
+      }
+
+      function renderError(message) {
+        const errorNode = errorTemplate.content.cloneNode(true);
+        errorNode.querySelector('.error').textContent = message;
+        resultContent.replaceChildren(errorNode);
+        resultSection.hidden = false;
+      }
+
+      function renderAnalysis(data) {
+        const { summary, reasoning, recommendations } = data;
+        const fragment = document.createDocumentFragment();
+
+        const summaryEl = document.createElement('p');
+        summaryEl.className = 'summary';
+        summaryEl.textContent = summary;
+        fragment.appendChild(summaryEl);
+
+        const reasoningEl = document.createElement('div');
+        reasoningEl.className = 'reasoning';
+        reasoningEl.innerHTML = `<h3>Reasoning</h3><p>${reasoning}</p>`;
+        fragment.appendChild(reasoningEl);
+
+        if (recommendations.length > 0) {
+          const list = document.createElement('ul');
+          list.className = 'recommendations';
+          recommendations.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            list.appendChild(li);
+          });
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = '<h3>Recommended next steps</h3>';
+          wrapper.appendChild(list);
+          fragment.appendChild(wrapper);
+        }
+
+        resultContent.replaceChildren(fragment);
+        resultSection.hidden = false;
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) {
+          return;
+        }
+
+        renderLoading();
+
+        const formData = new FormData(form);
+        const payload = {
+          question: formData.get('question')?.toString().trim() ?? '',
+          context: formData.get('context')?.toString().trim() ?? '',
+          model: formData.get('model')?.toString() ?? 'liuyao-lite'
+        };
+
+        try {
+          const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            const { message } = await response.json().catch(() => ({ message: 'Unexpected error occurred.' }));
+            throw new Error(message ?? 'Unexpected error occurred.');
+          }
+
+          const result = await response.json();
+          renderAnalysis(result);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unable to process your request.';
+          renderError(message);
+        }
+      });
+    </script>
+  </body>
+</html>
