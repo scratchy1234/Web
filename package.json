@@ -5,13 +5,20 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "eslint \"lib/**/*.ts\" \"tests/**/*.ts\"",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node dist/lib/server.js"
   },
   "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.9.2",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.56.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.2"
+    "vitest": "^4.0.5"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
   }
 }
